@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="module">
+        let lastMessageId = 0;
+
+        async function longPolling() {
+            const response = await fetch(`http://localhost:3002/messages?lastMessageId=${lastMessageId}`);
+            const data = await response.json();
+            console.log("THE LONG POLLING IN ACTION", data);
+
+            data.forEach((message) => {
+                if (message.id > lastMessageId) {
+                    const li = document.createElement("li");
+                    li.textContent = message.message;
+                    document.body.appendChild(li);
+                    lastMessageId = message.id;
+                }
+            });
+            // Rather than making a request every 5 seconds, we make a request after the previous request has completed
+            longPolling();
+        }
+        longPolling();
+
+        const form = document.getElementById("form");
+        const input = document.getElementById("input");
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const message = input.value;
+                const response = await fetch('http://localhost:3002/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+                const data = await response.json();
+                console.log(data);
+                input.value = "";
+            });
+        });
+    </script>
+</head>
+<body>
+    <form id="form">
+        <input type="text" id="input" name="message">
+        <button type="submit">Send</button>
+    </form>
+    
+</body>
+</html>
