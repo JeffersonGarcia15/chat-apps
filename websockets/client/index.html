@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="module">
+        import { io } from 'https://cdn.socket.io/4.3.2/socket.io.esm.min.js';
+
+        const socket = io({
+            auth: {
+                username: "Jefferson",
+                serverOffset: 0
+            }
+        });
+
+        socket.on("message", (message, serverOffset) => {
+            const li = document.createElement("li");
+            li.textContent = message;
+            document.body.appendChild(li);
+            socket.auth.serverOffset = serverOffset;
+        });
+
+        const form = document.getElementById("form");
+        const input = document.getElementById("input");
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const message = input.value;
+                socket.emit("message", message);
+                input.value = "";
+            });
+        });
+    </script>
+</head>
+<body>
+    <form id="form">
+        <input type="text" id="input" name="message">
+        <button type="submit">Send</button>
+    </form>
+    
+</body>
+</html>
