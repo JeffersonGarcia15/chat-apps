@@ -37,20 +37,12 @@ app.post("/messages", (req, res) => {
     };
     messages.push(newMessage);
 
-    // Indices of requests to remove
-    const requestsToRemove = [];
-
-    // Handle the long-polling requests
-    requests.forEach((request, index) => {
+    // Send the new message to all the clients that are waiting for a message
+    while (requests.length > 0) {
+        const request = requests.shift();
         if (request.lastMessageId < newMessage.id) {
             request.res.json(messages.filter((message) => message.id > request.lastMessageId));
-            requestsToRemove.push(index); // Add index to remove later
         }
-    });
-
-    // Remove the handled requests in reverse order to avoid index shifting
-    for (let i = requestsToRemove.length - 1; i >= 0; i--) {
-        requests.splice(requestsToRemove[i], 1);
     }
 
     res.status(201).json(newMessage);
