@@ -7,6 +7,8 @@ const app = express();
 
 app.use(logger("dev"));
 
+app.use(express.json());
+
 const messages = [];
 
 app.get("/", (req, res) => {
