@@ -50,6 +50,26 @@ io.on("connection", (socket) => {
       io.emit("message", message, result.lastInsertRowid.toString());
       // await db.close();
     }
+
+    // Get the messages that you received when you were offline
+
+    // Client should send auth: {token:... username:..., serverOffset:...} where serverOffset is the last message id received, default 0
+    // socket.auth.serverOffset = serverOffset;(arg: serverOffset) on the frontend, this indicates the id of the last message that was received by the client
+    if (!socket.recovered) {
+      try {
+        const results = await db.execute({
+          sql: "SELECT * FROM messages WHERE id > ?",
+          args: [socket.handshake.auth.serverOffset ?? 0]
+        });
+
+        // Send the messages to the client
+        results.rows.forEach((row) => {
+          socket.emit("message", row.message, row.id.toString()); // socket.on on the frontend will get these 2 arguments, message and id
+        });
+      } catch (error) {
+        console.error("Error getting messages: ", error);
+      }
+    }
   });
 
   socket.on("disconnect", () => {
