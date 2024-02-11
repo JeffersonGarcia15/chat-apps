@@ -1,10 +1,11 @@
 import {
+  ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 
 @WebSocketGateway({
   cors: {
@@ -26,6 +27,16 @@ export class EventsGateway {
   @SubscribeMessage("identity")
   async identity(@MessageBody() data: number): Promise<number> {
     return data;
+  }
+
+  // https://stackoverflow.com/questions/55949600/how-to-create-rooms-with-nestjs-and-socket-io
+  @SubscribeMessage("joinGroup")
+  joinGroup(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { groupId: string },
+  ) {
+    client.join(data.groupId);
+    console.log(`User joined group ${data.groupId}`);
   }
 
   // Trying to create an "X is Typing..." feature

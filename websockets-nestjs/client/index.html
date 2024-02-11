@@ -11,6 +11,10 @@
 
     const socket = io("http://localhost:3000");
 
+    // Emitting a "joinGroup" event when joining a group chat
+    socket.emit("joinGroup", { groupId: "4" });
+
+
     socket.on("events", (message) => {
       const li = document.createElement("li");
       li.textContent = message;
@@ -19,7 +23,6 @@
 
     // Displaying Jefferson is Typing...
     socket.on("userTyping", (data) => {
-      console.log("%c data", "color: #00a3cc;", data);
       if (data.isTyping) {
         typingIndicator.style.display = "";
       } else {
@@ -36,9 +39,9 @@
 
     input.addEventListener("input", () => {
       clearTimeout(typingTimeoutId);
-      socket.emit("startTyping", { userId: 1, groupId: 4 });
+      socket.emit("startTyping", { userId: "1", groupId: "4" });
       typingTimeoutId = setTimeout(() => {
-        socket.emit("stopTyping", { userId: 1, groupId: 4 });
+        socket.emit("stopTyping", { userId: "1", groupId: "4" });
       }, 2000);
     });
 
