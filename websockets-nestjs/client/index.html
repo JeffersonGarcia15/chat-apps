@@ -14,6 +14,9 @@
     // Emitting a "joinGroup" event when joining a group chat
     socket.emit("joinGroup", { groupId: "4" });
 
+    socket.on("exception", (errorData) => {
+      console.error("WebSocket exception received:", errorData);
+    });
 
     socket.on("events", (message) => {
       const li = document.createElement("li");
@@ -53,6 +56,14 @@
         input.value = "";
       });
     });
+
+    // Testing the Filter
+    document.addEventListener('DOMContentLoaded', () => {
+      const testErrorButton = document.getElementById("test-error");
+      testErrorButton.addEventListener("click", () => {
+        socket.emit("testError", {});
+      });
+    });
   </script>
 </head>
 
@@ -62,6 +73,8 @@
     <button type="submit">Send</button>
   </form>
   <div id="typing-indicator" style="display: none;">Jefferson is typing...</div>
+  <button id="test-error">Test Error</button>
+
 
 </body>
 
