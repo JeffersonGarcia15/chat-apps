@@ -1,4 +1,4 @@
-import { UseFilters } from "@nestjs/common";
+import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
 import {
   ConnectedSocket,
   MessageBody,
@@ -9,6 +9,7 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { WsExceptionFilter } from "src/filters/wsException.filter";
+import { SendMessageDto } from "../dto/sendMessage.dto";
 
 @WebSocketGateway({
   cors: {
@@ -16,16 +17,20 @@ import { WsExceptionFilter } from "src/filters/wsException.filter";
   },
 })
 @UseFilters(new WsExceptionFilter())
+@UsePipes(new ValidationPipe())
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
 
   @SubscribeMessage("events")
-  findAll(@MessageBody() data: any) {
+  sendMessage(@MessageBody() data: SendMessageDto) {
     // return from([1, 2, 3]).pipe(
     //   map((item) => ({ event: "events", data: item })),
     // );
-    return { event: "events", data };
+    console.log("AM I HERE", data);
+    this.server
+      .to(data.groupId)
+      .emit("events", { groupId: data.groupId, message: data.message });
   }
 
   @SubscribeMessage("identity")
@@ -58,11 +63,5 @@ export class EventsGateway {
     this.server
       .to(data.groupId)
       .emit("userTyping", { userId: data.userId, isTyping: false });
-  }
-
-  @SubscribeMessage("testError")
-  testError(@MessageBody() data: any) {
-    console.log("Test error");
-    throw new WsException("Test error");
   }
 }
