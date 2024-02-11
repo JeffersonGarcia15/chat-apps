@@ -18,7 +18,8 @@
       console.error("WebSocket exception received:", errorData);
     });
 
-    socket.on("events", (message) => {
+    socket.on("events", ({message}) => {
+      console.log("Message received:", message);
       const li = document.createElement("li");
       li.textContent = message;
       document.body.appendChild(li);
@@ -52,18 +53,11 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const message = input.value;
-        socket.emit("events", message);
+        socket.emit("events", {message, groupId: "4"});
         input.value = "";
       });
     });
 
-    // Testing the Filter
-    document.addEventListener('DOMContentLoaded', () => {
-      const testErrorButton = document.getElementById("test-error");
-      testErrorButton.addEventListener("click", () => {
-        socket.emit("testError", {});
-      });
-    });
   </script>
 </head>
 
