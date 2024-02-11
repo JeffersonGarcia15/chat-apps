@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" crossorigin="anonymous"></script> -->
+  <script type="module">
+    import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
+
+    const socket = io("http://localhost:3000");
+
+    // Emitting a "joinGroup" event when joining a group chat
+    socket.emit("joinGroup", { groupId: "4" });
+
+
+    socket.on("events", (message) => {
+      const li = document.createElement("li");
+      li.textContent = message;
+      document.body.appendChild(li);
+    });
+
+    // Displaying Jefferson is Typing...
+    socket.on("userTyping", (data) => {
+      if (data.isTyping) {
+        typingIndicator.style.display = "";
+      } else {
+        typingIndicator.style.display = "none";
+      }
+    });
+
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const typingIndicator = document.getElementById("typing-indicator");
+
+    // Add throttle to prevent spamming
+    let typingTimeoutId = null;
+
+    input.addEventListener("input", () => {
+      clearTimeout(typingTimeoutId);
+      socket.emit("startTyping", { userId: "1", groupId: "4" });
+      typingTimeoutId = setTimeout(() => {
+        socket.emit("stopTyping", { userId: "1", groupId: "4" });
+      }, 2000);
+    });
+
+    document.addEventListener("DOMContentLoaded", (event) => {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const message = input.value;
+        socket.emit("events", message);
+        input.value = "";
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <form id="form">
+    <input type="text" id="input" name="message">
+    <button type="submit">Send</button>
+  </form>
+  <div id="typing-indicator" style="display: none;">Jefferson is typing...</div>
+
+</body>
+
+</html>
