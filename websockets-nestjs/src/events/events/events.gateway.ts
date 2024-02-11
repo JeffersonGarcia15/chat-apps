@@ -1,17 +1,21 @@
+import { UseFilters } from "@nestjs/common";
 import {
   ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import { WsExceptionFilter } from "src/filters/wsException.filter";
 
 @WebSocketGateway({
   cors: {
     origin: "*",
   },
 })
+@UseFilters(new WsExceptionFilter())
 export class EventsGateway {
   @WebSocketServer()
   server: Server;
@@ -54,5 +58,11 @@ export class EventsGateway {
     this.server
       .to(data.groupId)
       .emit("userTyping", { userId: data.userId, isTyping: false });
+  }
+
+  @SubscribeMessage("testError")
+  testError(@MessageBody() data: any) {
+    console.log("Test error");
+    throw new WsException("Test error");
   }
 }
